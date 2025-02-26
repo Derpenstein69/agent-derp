@@ -1,11 +1,11 @@
-// via https://github.com/vercel/ai/blob/main/examples/next-openai/app/api/use-chat-human-in-the-loop/utils.ts
-
 import { formatDataStreamPart, type Message } from "@ai-sdk/ui-utils";
 import {
   convertToCoreMessages,
   type DataStreamWriter,
   type ToolExecutionOptions,
   type ToolSet,
+  createOpenAI,
+  streamText,
 } from "ai";
 import { z } from "zod";
 import { APPROVAL } from "./shared";
@@ -115,14 +115,51 @@ export async function processToolCalls<
   return [...messages.slice(0, -1), { ...lastMessage, parts: processedParts }];
 }
 
-// export function getToolsRequiringConfirmation<
-//   T extends ToolSet
-//   // E extends {
-//   //   [K in keyof T as T[K] extends { execute: Function } ? never : K]: T[K];
-//   // },
-// >(tools: T): string[] {
-//   return (Object.keys(tools) as (keyof T)[]).filter((key) => {
-//     const maybeTool = tools[key];
-//     return typeof maybeTool.execute !== "function";
-//   }) as string[];
-// }
+export function getToolsRequiringConfirmation<
+  T extends ToolSet
+  // E extends {
+  //   [K in keyof T as T[K] extends { execute: Function } ? never : K]: T[K];
+  // },
+>(tools: T): string[] {
+  return (Object.keys(tools) as (keyof T)[]).filter((key) => {
+    const maybeTool = tools[key];
+    return typeof maybeTool.execute !== "function";
+  }) as string[];
+}
+
+// Helper functions for task categorization
+export function categorizeTask(task: { type: string; when: string | number; payload: string; category?: string }) {
+  return {
+    ...task,
+    category: task.category || "Uncategorized",
+  };
+}
+
+// Helper functions for task history management
+export function addTaskToHistory(task: { type: string; when: string | number; payload: string; category?: string }) {
+  const history = getTaskHistory();
+  history.push(task);
+  localStorage.setItem("taskHistory", JSON.stringify(history));
+}
+
+export function getTaskHistory() {
+  const history = localStorage.getItem("taskHistory");
+  return history ? JSON.parse(history) : [];
+}
+
+// Helper functions for task analytics
+export function updateTaskAnalytics(task: { type: string; when: string | number; payload: string; category?: string }) {
+  const analytics = getTaskAnalytics();
+  const category = task.category || "Uncategorized";
+  if (!analytics[category]) {
+    analytics[category] = { count: 0, tasks: [] };
+  }
+  analytics[category].count += 1;
+  analytics[category].tasks.push(task);
+  localStorage.setItem("taskAnalytics", JSON.stringify(analytics));
+}
+
+export function getTaskAnalytics() {
+  const analytics = localStorage.getItem("taskAnalytics");
+  return analytics ? JSON.parse(analytics) : {};
+}

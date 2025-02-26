@@ -22,6 +22,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 export type Env = {
   OPENAI_API_KEY: string;
   Chat: AgentNamespace<Chat>;
+  GATEWAY_BASE_URL: string;
 };
 
 // we use ALS to expose the agent context to the tools
@@ -49,15 +50,14 @@ export class Chat extends AIChatAgent<Env> {
           });
 
           // Initialize OpenAI client with API key from environment
-          const openai = createOpenAI({
-            apiKey: this.env.OPENAI_API_KEY,
-          });
-
-          // Cloudflare AI Gateway
           // const openai = createOpenAI({
           //   apiKey: this.env.OPENAI_API_KEY,
-          //   baseURL: this.env.GATEWAY_BASE_URL,
           // });
+
+          // Cloudflare AI Gateway
+          const openai = createOpenAI({
+            baseURL: this.env.GATEWAY_BASE_URL,
+          });
 
           // Stream the AI response using GPT-4
           const result = streamText({
@@ -88,6 +88,24 @@ export class Chat extends AIChatAgent<Env> {
         content: `scheduled message: ${description}`,
       },
     ]);
+  }
+
+  // Add logic for dynamic scheduling adjustments
+  async adjustScheduledTask(taskId: string, newSchedule: Schedule<string>) {
+    // Logic to adjust the schedule of an existing task
+    // This could involve updating the task's schedule in the database or in-memory storage
+  }
+
+  // Add logic for task rescheduling
+  async rescheduleTask(taskId: string, newTime: Date) {
+    // Logic to reschedule a task to a new time
+    // This could involve updating the task's schedule in the database or in-memory storage
+  }
+
+  // Add logic for real-time task updates
+  async updateTaskStatus(taskId: string, status: string) {
+    // Logic to update the status of a task in real-time
+    // This could involve sending a notification to the user or updating the task's status in the database
   }
 }
 

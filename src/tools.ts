@@ -39,8 +39,9 @@ const scheduleTask = tool({
     type: z.enum(["scheduled", "delayed", "cron"]),
     when: z.union([z.number(), z.string()]),
     payload: z.string(),
+    category: z.string().optional(), // Task categorization
   }),
-  execute: async ({ type, when, payload }) => {
+  execute: async ({ type, when, payload, category }) => {
     // we can now read the agent context from the ALS store
     const agent = agentContext.getStore();
     if (!agent) {
@@ -56,6 +57,10 @@ const scheduleTask = tool({
         "executeTask",
         payload
       );
+      // Add task to history
+      agent.addTaskToHistory({ type, when, payload, category });
+      // Update task analytics
+      agent.updateTaskAnalytics({ type, when, payload, category });
     } catch (error) {
       console.error("error scheduling task", error);
       return `Error scheduling task: ${error}`;

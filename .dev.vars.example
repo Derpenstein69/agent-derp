@@ -1,2 +1,5 @@
 # Optional - Cloudflare AI Gateway https://developers.cloudflare.com/ai-gateway/
 GATEWAY_BASE_URL=https://gateway.ai.cloudflare.com/v1/..
+
+# Example AI binding configuration for workers-ai-provider
+AI=your_ai_binding_value

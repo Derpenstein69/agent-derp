@@ -31,6 +31,17 @@
 	],
 	"observability": {
 		"enabled": true
+	},
+	"ai": {
+		"bindings": [
+			{
+				"name": "AI",
+				"provider": "workers-ai-provider"
+			}
+		]
+	},
+	"vars": {
+		"GATEWAY_BASE_URL": "https://gateway.ai.cloudflare.com/v1/.."
 	}
   /**
    * Smart Placement

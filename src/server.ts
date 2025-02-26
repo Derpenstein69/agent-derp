@@ -13,7 +13,7 @@ import {
   streamText,
   type StreamTextOnFinishCallback,
 } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createWorkersAI } from "workers-ai-provider";
 import { processToolCalls } from "./utils";
 import { tools, executions } from "./tools";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -49,19 +49,14 @@ export class Chat extends AIChatAgent<Env> {
             executions,
           });
 
-          // Initialize OpenAI client with API key from environment
-          // const openai = createOpenAI({
-          //   apiKey: this.env.OPENAI_API_KEY,
-          // });
-
-          // Cloudflare AI Gateway
-          const openai = createOpenAI({
-            baseURL: this.env.GATEWAY_BASE_URL,
+          // Initialize Workers AI client with AI binding from environment
+          const workersai = createWorkersAI({
+            binding: this.env.AI,
           });
 
           // Stream the AI response using GPT-4
           const result = streamText({
-            model: openai("gpt-4o-2024-11-20"),
+            model: workersai("@cf/meta/llama-2-7b-chat-int8"),
             system: `
               You are a helpful assistant that can do various tasks. If the user asks, then you can also schedule tasks to be executed later. The input may have a date/time/cron pattern to be input as an object into a scheduler The time is now: ${new Date().toISOString()}.
               `,

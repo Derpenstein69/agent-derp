@@ -39,6 +39,7 @@ Create a `.dev.vars` file:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
+AI=your_ai_binding_value
 ```
 
 4. Run locally:
@@ -191,6 +192,7 @@ Each use case can be implemented by:
 - [`agents-sdk`](https://github.com/cloudflare/agents/blob/main/packages/agents/README.md)
 - [Cloudflare Agents Documentation](https://developers.cloudflare.com/agents/)
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
+- [Cloudflare Workers AI provider documentation](https://sdk.vercel.ai/providers/community-providers/cloudflare-workers-ai)
 
 ## License
 

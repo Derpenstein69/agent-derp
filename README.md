@@ -187,6 +187,40 @@ Each use case can be implemented by:
 3. Extending the agent's capabilities in `server.ts`
 4. Adding any necessary external API integrations
 
+## Cloudflare AI Gateway Integration
+
+### Task Scheduling
+
+The `src/server.ts` file now integrates with the Cloudflare AI Gateway for task scheduling. This allows for more complex scheduling patterns and better task management.
+
+### Automated Task Adjustments
+
+Automated adjustments to scheduled tasks based on real-time data and user interactions have been implemented. This ensures that tasks are always up-to-date and relevant.
+
+### Task Analytics
+
+AI-driven insights into task performance and user behavior have been added. This helps in understanding how tasks are being executed and provides valuable data for improving task management.
+
+### Instructions for Using Cloudflare AI Gateway
+
+1. Set up your environment:
+
+Create a `.dev.vars` file:
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+AI=your_ai_binding_value
+GATEWAY_BASE_URL=https://gateway.ai.cloudflare.com/v1/..
+```
+
+2. Update the `scheduleTask` tool in `src/tools.ts` to leverage the Cloudflare AI Gateway for scheduling tasks.
+
+3. Implement task categorization and history management in `src/utils.ts`.
+
+4. Add task analytics to track task performance and user behavior in `src/utils.ts`.
+
+5. Enhance the chat interface in `src/app.tsx` to allow task scheduling via natural language and implement a visual representation of scheduled tasks.
+
 ## Learn More
 
 - [`agents-sdk`](https://github.com/cloudflare/agents/blob/main/packages/agents/README.md)

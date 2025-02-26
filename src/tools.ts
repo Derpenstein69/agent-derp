@@ -6,6 +6,7 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import { agentContext } from "./server";
+import { categorizeTask, addTaskToHistory, updateTaskAnalytics, updateUserProfileWithNewInfo } from "./utils";
 
 /**
  * Weather information tool that requires human confirmation
@@ -40,8 +41,9 @@ const scheduleTask = tool({
     when: z.union([z.number(), z.string()]),
     payload: z.string(),
     category: z.string().optional(), // Task categorization
+    userId: z.string(), // User ID for profile updates
   }),
-  execute: async ({ type, when, payload, category }) => {
+  execute: async ({ type, when, payload, category, userId }) => {
     // we can now read the agent context from the ALS store
     const agent = agentContext.getStore();
     if (!agent) {
@@ -58,9 +60,11 @@ const scheduleTask = tool({
         payload
       );
       // Add task to history
-      agent.addTaskToHistory({ type, when, payload, category });
+      addTaskToHistory(categorizeTask({ type, when, payload, category }));
       // Update task analytics
-      agent.updateTaskAnalytics({ type, when, payload, category });
+      updateTaskAnalytics(categorizeTask({ type, when, payload, category }));
+      // Update user profile with new task information
+      updateUserProfileWithNewInfo(userId, { type, when, payload, category });
     } catch (error) {
       console.error("error scheduling task", error);
       return `Error scheduling task: ${error}`;
@@ -68,6 +72,54 @@ const scheduleTask = tool({
     return `Task scheduled for ${when}`;
   },
 });
+
+/**
+ * Tool for automated task adjustments based on real-time data and user interactions
+ */
+const adjustTask = tool({
+  description: "adjust a scheduled task based on real-time data and user interactions",
+  parameters: z.object({
+    taskId: z.string(),
+    newSchedule: z.union([z.number(), z.string()]),
+  }),
+  execute: async ({ taskId, newSchedule }) => {
+    const agent = agentContext.getStore();
+    if (!agent) {
+      throw new Error("No agent found");
+    }
+    try {
+      await agent.adjustScheduledTask(taskId, newSchedule);
+    } catch (error) {
+      console.error("error adjusting task", error);
+      return `Error adjusting task: ${error}`;
+    }
+    return `Task ${taskId} adjusted to new schedule: ${newSchedule}`;
+  },
+});
+
+/**
+ * Tool for task analytics to provide insights into task performance and user behavior
+ */
+const analyzeTask = tool({
+  description: "analyze task performance and provide insights",
+  parameters: z.object({
+    taskId: z.string(),
+  }),
+  execute: async ({ taskId }) => {
+    const agent = agentContext.getStore();
+    if (!agent) {
+      throw new Error("No agent found");
+    }
+    try {
+      const insights = await agent.analyzeTaskPerformance(taskId);
+      return insights;
+    } catch (error) {
+      console.error("error analyzing task", error);
+      return `Error analyzing task: ${error}`;
+    }
+  },
+});
+
 /**
  * Export all available tools
  * These will be provided to the AI model to describe available capabilities
@@ -76,6 +128,8 @@ export const tools = {
   getWeatherInformation,
   getLocalTime,
   scheduleTask,
+  adjustTask,
+  analyzeTask,
 };
 
 /**

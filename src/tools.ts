@@ -4,6 +4,7 @@
  */
 import { tool } from "ai";
 import { z } from "zod";
+import { Vectorize } from "vectorize"; // Import Vectorize
 
 import { agentContext } from "./server";
 import { categorizeTask, addTaskToHistory, updateTaskAnalytics, updateUserProfileWithNewInfo } from "./utils";

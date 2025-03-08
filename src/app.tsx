@@ -79,6 +79,18 @@ export default function Chat() {
     ];
   };
 
+  // Function to handle network errors
+  const handleNetworkError = (error: Error) => {
+    console.error("Network error:", error);
+    alert("A network error occurred. Please check your connection and try again.");
+  };
+
+  // Function to handle asynchronous operation errors
+  const handleAsyncError = (error: Error) => {
+    console.error("Async operation error:", error);
+    alert("An error occurred while processing your request. Please try again.");
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -170,7 +182,7 @@ export default function Chat() {
                                 addToolResult({
                                   toolCallId,
                                   result: APPROVAL.YES,
-                                })
+                                }).catch(handleAsyncError)
                               }
                             >
                               ✓ Approve
@@ -181,7 +193,7 @@ export default function Chat() {
                                 addToolResult({
                                   toolCallId,
                                   result: APPROVAL.NO,
-                                })
+                                }).catch(handleAsyncError)
                               }
                             >
                               ✕ Reject
@@ -197,7 +209,10 @@ export default function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSubmit} className="input-form">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit().catch(handleAsyncError);
+        }} className="input-form">
           <input
             disabled={pendingToolCallConfirmation}
             className="chat-input"

@@ -17,7 +17,6 @@ A starter template for building AI-powered chat agents using Cloudflare's Agent 
 ## Prerequisites
 
 - Cloudflare account
-- OpenAI API key
 
 ## Quick Start
 
@@ -38,7 +37,6 @@ npm install
 Create a `.dev.vars` file:
 
 ```env
-OPENAI_API_KEY=your_openai_api_key
 AI=your_ai_binding_value
 ```
 
@@ -208,7 +206,6 @@ AI-driven insights into task performance and user behavior have been added. This
 Create a `.dev.vars` file:
 
 ```env
-OPENAI_API_KEY=your_openai_api_key
 AI=your_ai_binding_value
 GATEWAY_BASE_URL=https://gateway.ai.cloudflare.com/v1/..
 ```

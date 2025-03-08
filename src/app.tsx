@@ -67,6 +67,18 @@ export default function Chat() {
     )
   );
 
+  // Function to get personalized task recommendations based on user profiles
+  const getPersonalizedTaskRecommendations = (userId: string) => {
+    // Logic to fetch and display personalized task recommendations
+    // This could involve fetching data from the server or using local state
+    // For now, we'll return a placeholder array of recommendations
+    return [
+      "Complete your daily exercise",
+      "Review your meeting notes",
+      "Plan your next project",
+    ];
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -100,6 +112,7 @@ export default function Chat() {
               <ul>
                 <li>🌤️ Weather information for any city</li>
                 <li>🕒 Local time in different locations</li>
+                <li>📅 Schedule a task</li>
               </ul>
             </div>
           )}
@@ -204,6 +217,15 @@ export default function Chat() {
             Send
           </button>
         </form>
+
+        <div className="task-recommendations">
+          <h3>Personalized Task Recommendations</h3>
+          <ul>
+            {getPersonalizedTaskRecommendations("user123").map((task, index) => (
+              <li key={index}>{task}</li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

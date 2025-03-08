@@ -29,11 +29,21 @@ const getLocalTime = tool({
   description: "get the local time for a specified location",
   parameters: z.object({ location: z.string() }),
   execute: async ({ location }) => {
-    console.log(`Getting local time for ${location}`);
-    return "10am";
+    try {
+      console.log(`Getting local time for ${location}`);
+      return "10am";
+    } catch (error) {
+      console.error(`Error getting local time for ${location}: ${error.message}`);
+      throw new Error(`Failed to get local time for ${location}. Please try again.`);
+    }
   },
 });
 
+/**
+ * Task scheduling tool that allows scheduling tasks to be executed at a later time.
+ * The 'when' parameter can be a date, a delay in seconds, or a cron pattern.
+ * This tool also categorizes tasks, updates task analytics, and user profiles.
+ */
 const scheduleTask = tool({
   description:
     "schedule a task to be executed at a later time. 'when' can be a date, a delay in seconds, or a cron pattern.",
@@ -67,8 +77,8 @@ const scheduleTask = tool({
       // Update user profile with new task information
       updateUserProfileWithNewInfo(userId, { type, when, payload, category });
     } catch (error) {
-      console.error("error scheduling task", error);
-      return `Error scheduling task: ${error}`;
+      console.error(`Error scheduling task: ${error.message}`);
+      throw new Error(`Failed to schedule task. Please check the input parameters and try again.`);
     }
     return `Task scheduled for ${when}`;
   },
@@ -91,8 +101,8 @@ const adjustTask = tool({
     try {
       await agent.adjustScheduledTask(taskId, newSchedule);
     } catch (error) {
-      console.error("error adjusting task", error);
-      return `Error adjusting task: ${error}`;
+      console.error(`Error adjusting task ${taskId}: ${error.message}`);
+      throw new Error(`Failed to adjust task ${taskId}. Please try again.`);
     }
     return `Task ${taskId} adjusted to new schedule: ${newSchedule}`;
   },
@@ -115,8 +125,8 @@ const analyzeTask = tool({
       const insights = await agent.analyzeTaskPerformance(taskId);
       return insights;
     } catch (error) {
-      console.error("error analyzing task", error);
-      return `Error analyzing task: ${error}`;
+      console.error(`Error analyzing task ${taskId}: ${error.message}`);
+      throw new Error(`Failed to analyze task ${taskId}. Please try again.`);
     }
   },
 });
@@ -140,7 +150,12 @@ export const tools = {
  */
 export const executions = {
   getWeatherInformation: async ({ city }: { city: string }) => {
-    console.log(`Getting weather information for ${city}`);
-    return `The weather in ${city} is sunny`;
+    try {
+      console.log(`Getting weather information for ${city}`);
+      return `The weather in ${city} is sunny`;
+    } catch (error) {
+      console.error(`Error getting weather information for ${city}: ${error.message}`);
+      throw new Error(`Failed to get weather information for ${city}. Please try again.`);
+    }
   },
 };

@@ -28,6 +28,7 @@ export type Env = {
 
 // we use ALS to expose the agent context to the tools
 export const agentContext = new AsyncLocalStorage<Chat>();
+
 /**
  * Chat Agent implementation that handles real-time AI chat interactions
  */
@@ -88,6 +89,12 @@ export class Chat extends AIChatAgent<Env> {
       return dataStreamResponse;
     });
   }
+
+  /**
+   * Executes a scheduled task and updates the task history and analytics
+   * @param description - Description of the task
+   * @param task - Task schedule details
+   */
   async executeTask(description: string, task: Schedule<string>) {
     await this.saveMessages([
       ...this.messages,

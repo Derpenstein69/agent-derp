@@ -31,7 +31,6 @@
     "wrangler": "^3.110.0"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.1.14",
     "@ai-sdk/react": "^1.1.18",
     "agents-sdk": "^0.0.19",
     "ai": "^4.1.46",

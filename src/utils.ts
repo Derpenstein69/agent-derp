@@ -79,10 +79,15 @@ export async function processToolCalls<
 
         const toolInstance = executions[toolName];
         if (toolInstance) {
-          result = await toolInstance(toolInvocation.args, {
-            messages: convertToCoreMessages(messages),
-            toolCallId: toolInvocation.toolCallId,
-          });
+          try {
+            result = await toolInstance(toolInvocation.args, {
+              messages: convertToCoreMessages(messages),
+              toolCallId: toolInvocation.toolCallId,
+            });
+          } catch (error) {
+            console.error(`Error executing tool ${toolName}: ${error.message}`);
+            result = `Error executing tool ${toolName}: ${error.message}`;
+          }
         } else {
           result = "Error: No execute function found on tool";
         }
@@ -116,11 +121,14 @@ export async function processToolCalls<
   return [...messages.slice(0, -1), { ...lastMessage, parts: processedParts }];
 }
 
+/**
+ * Retrieves the list of tools that require human confirmation before execution.
+ *
+ * @param tools - The set of tools to check
+ * @returns An array of tool names that require confirmation
+ */
 export function getToolsRequiringConfirmation<
   T extends ToolSet
-  // E extends {
-  //   [K in keyof T as T[K] extends { execute: Function } ? never : K]: T[K];
-  // },
 >(tools: T): string[] {
   return (Object.keys(tools) as (keyof T)[]).filter((key) => {
     const maybeTool = tools[key];
@@ -129,6 +137,12 @@ export function getToolsRequiringConfirmation<
 }
 
 // Helper functions for task categorization
+/**
+ * Categorizes a task based on its type, schedule, and payload.
+ *
+ * @param task - The task to categorize
+ * @returns The categorized task with an optional category
+ */
 export function categorizeTask(task: { type: string; when: string | number; payload: string; category?: string }) {
   const vectorizedTask = Vectorize(task); // Use Vectorize for task categorization
   return {
@@ -138,18 +152,33 @@ export function categorizeTask(task: { type: string; when: string | number; payl
 }
 
 // Helper functions for task history management
+/**
+ * Adds a task to the task history.
+ *
+ * @param task - The task to add to history
+ */
 export function addTaskToHistory(task: { type: string; when: string | number; payload: string; category?: string }) {
   const history = getTaskHistory();
   history.push(task);
   localStorage.setItem("taskHistory", JSON.stringify(history));
 }
 
+/**
+ * Retrieves the task history from local storage.
+ *
+ * @returns The task history as an array of tasks
+ */
 export function getTaskHistory() {
   const history = localStorage.getItem("taskHistory");
   return history ? JSON.parse(history) : [];
 }
 
 // Helper functions for task analytics
+/**
+ * Updates task analytics with the provided task information.
+ *
+ * @param task - The task to update analytics for
+ */
 export function updateTaskAnalytics(task: { type: string; when: string | number; payload: string; category?: string }) {
   const vectorizedTask = Vectorize(task); // Use Vectorize for task analytics
   const analytics = getTaskAnalytics();
@@ -162,18 +191,33 @@ export function updateTaskAnalytics(task: { type: string; when: string | number;
   localStorage.setItem("taskAnalytics", JSON.stringify(analytics));
 }
 
+/**
+ * Retrieves task analytics from local storage.
+ *
+ * @returns The task analytics as an object
+ */
 export function getTaskAnalytics() {
   const analytics = localStorage.getItem("taskAnalytics");
   return analytics ? JSON.parse(analytics) : {};
 }
 
 // Helper functions for task categorization and history management
+/**
+ * Categorizes a task and adds it to the task history.
+ *
+ * @param task - The task to categorize and add to history
+ */
 export function categorizeAndAddTaskToHistory(task: { type: string; when: string | number; payload: string; category?: string }) {
   const categorizedTask = categorizeTask(task);
   addTaskToHistory(categorizedTask);
 }
 
 // Helper functions for task analytics to generate insights into task performance
+/**
+ * Generates insights into task performance based on task analytics.
+ *
+ * @returns An array of task performance insights
+ */
 export function generateTaskPerformanceInsights() {
   const analytics = getTaskAnalytics();
   const insights = Object.keys(analytics).map(category => {
@@ -188,6 +232,12 @@ export function generateTaskPerformanceInsights() {
 }
 
 // Helper functions for automated task adjustments based on real-time data and user interactions
+/**
+ * Adjusts a task's schedule based on real-time data.
+ *
+ * @param taskId - The ID of the task to adjust
+ * @param newSchedule - The new schedule for the task
+ */
 export function adjustTaskBasedOnRealTimeData(taskId: string, newSchedule: string | number) {
   const history = getTaskHistory();
   const taskIndex = history.findIndex((task: { id: string }) => task.id === taskId);
@@ -198,6 +248,12 @@ export function adjustTaskBasedOnRealTimeData(taskId: string, newSchedule: strin
 }
 
 // Helper functions for real-time task updates
+/**
+ * Updates the status of a task in real-time.
+ *
+ * @param taskId - The ID of the task to update
+ * @param status - The new status of the task
+ */
 export function updateTaskStatusInRealTime(taskId: string, status: string) {
   const history = getTaskHistory();
   const taskIndex = history.findIndex((task: { id: string }) => task.id === taskId);
@@ -208,17 +264,36 @@ export function updateTaskStatusInRealTime(taskId: string, status: string) {
 }
 
 // Helper functions to manage user profiles and contextual memory
+/**
+ * Creates a user profile with preferences and frequently asked questions.
+ *
+ * @param userId - The ID of the user
+ * @param preferences - The user's preferences
+ * @param frequentlyAskedQuestions - The user's frequently asked questions
+ */
 export function createUserProfile(userId: string, preferences: any, frequentlyAskedQuestions: any[]) {
   const userProfiles = getUserProfiles();
   userProfiles[userId] = { preferences, frequentlyAskedQuestions };
   localStorage.setItem("userProfiles", JSON.stringify(userProfiles));
 }
 
+/**
+ * Retrieves user profiles from local storage.
+ *
+ * @returns The user profiles as an object
+ */
 export function getUserProfiles() {
   const profiles = localStorage.getItem("userProfiles");
   return profiles ? JSON.parse(profiles) : {};
 }
 
+/**
+ * Updates a user profile with new preferences and frequently asked questions.
+ *
+ * @param userId - The ID of the user
+ * @param newPreferences - The new preferences for the user
+ * @param newFrequentlyAskedQuestions - The new frequently asked questions for the user
+ */
 export function updateUserProfile(userId: string, newPreferences: any, newFrequentlyAskedQuestions: any[]) {
   const userProfiles = getUserProfiles();
   if (userProfiles[userId]) {
@@ -228,6 +303,12 @@ export function updateUserProfile(userId: string, newPreferences: any, newFreque
   }
 }
 
+/**
+ * Updates the context of a user profile with new information.
+ *
+ * @param userId - The ID of the user
+ * @param newInfo - The new information to update the context with
+ */
 export function updateContextWithNewInfo(userId: string, newInfo: any) {
   const userProfiles = getUserProfiles();
   if (userProfiles[userId]) {
@@ -237,21 +318,43 @@ export function updateContextWithNewInfo(userId: string, newInfo: any) {
 }
 
 // Add a method to update the AI model with the latest conversation context
+/**
+ * Updates the AI model with the latest conversation context.
+ *
+ * @param conversationContext - The latest conversation context
+ */
 export function updateAIModelContext(conversationContext: any) {
   // Logic to update the AI model with the latest conversation context
 }
 
 // Add a method to store the entire conversation history
+/**
+ * Stores the entire conversation history.
+ *
+ * @param conversationHistory - The conversation history to store
+ */
 export function storeConversationHistory(conversationHistory: any) {
   // Logic to store the entire conversation history
 }
 
 // Add a method to store task details and user preferences
+/**
+ * Stores task details and user preferences.
+ *
+ * @param taskDetails - The task details to store
+ * @param userPreferences - The user preferences to store
+ */
 export function storeTaskDetails(taskDetails: any, userPreferences: any) {
   // Logic to store task details and user preferences
 }
 
 // Integrate task history and analytics functions into user profiling
+/**
+ * Integrates task history and analytics into user profiling.
+ *
+ * @param userId - The ID of the user
+ * @param task - The task to integrate into user profiling
+ */
 export function integrateTaskHistoryAndAnalytics(userId: string, task: { type: string; when: string | number; payload: string; category?: string }) {
   addTaskToHistory(task);
   updateTaskAnalytics(task);
@@ -259,6 +362,13 @@ export function integrateTaskHistoryAndAnalytics(userId: string, task: { type: s
 }
 
 // Helper functions to manage user profiles and contextual memory
+/**
+ * Manages user profiles with preferences and frequently asked questions.
+ *
+ * @param userId - The ID of the user
+ * @param preferences - The user's preferences
+ * @param frequentlyAskedQuestions - The user's frequently asked questions
+ */
 export function manageUserProfiles(userId: string, preferences: any, frequentlyAskedQuestions: any[]) {
   const userProfiles = getUserProfiles();
   userProfiles[userId] = { preferences, frequentlyAskedQuestions };
@@ -266,16 +376,32 @@ export function manageUserProfiles(userId: string, preferences: any, frequentlyA
 }
 
 // Helper functions to update the AI model with the latest conversation context
+/**
+ * Updates the AI model with the latest conversation context.
+ *
+ * @param conversationContext - The latest conversation context
+ */
 export function updateAIModelWithContext(conversationContext: any) {
   // Logic to update the AI model with the latest conversation context
 }
 
 // Helper functions to store the entire conversation history
+/**
+ * Stores the entire conversation history.
+ *
+ * @param conversationHistory - The conversation history to store
+ */
 export function storeFullConversationHistory(conversationHistory: any) {
   // Logic to store the entire conversation history
 }
 
 // Add logic to update user profiles with new information as the conversation progresses
+/**
+ * Updates a user profile with new information as the conversation progresses.
+ *
+ * @param userId - The ID of the user
+ * @param newInfo - The new information to update the profile with
+ */
 export function updateUserProfileWithNewInfo(userId: string, newInfo: any) {
   const userProfiles = getUserProfiles();
   if (userProfiles[userId]) {

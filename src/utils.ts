@@ -9,6 +9,7 @@ import {
 } from "ai";
 import { z } from "zod";
 import { APPROVAL } from "./shared";
+import { Vectorize } from "vectorize"; // Import Vectorize
 
 function isValidToolName<K extends PropertyKey, T extends object>(
   key: K,
@@ -129,8 +130,9 @@ export function getToolsRequiringConfirmation<
 
 // Helper functions for task categorization
 export function categorizeTask(task: { type: string; when: string | number; payload: string; category?: string }) {
+  const vectorizedTask = Vectorize(task); // Use Vectorize for task categorization
   return {
-    ...task,
+    ...vectorizedTask,
     category: task.category || "Uncategorized",
   };
 }
@@ -149,13 +151,14 @@ export function getTaskHistory() {
 
 // Helper functions for task analytics
 export function updateTaskAnalytics(task: { type: string; when: string | number; payload: string; category?: string }) {
+  const vectorizedTask = Vectorize(task); // Use Vectorize for task analytics
   const analytics = getTaskAnalytics();
-  const category = task.category || "Uncategorized";
+  const category = vectorizedTask.category || "Uncategorized";
   if (!analytics[category]) {
     analytics[category] = { count: 0, tasks: [] };
   }
   analytics[category].count += 1;
-  analytics[category].tasks.push(task);
+  analytics[category].tasks.push(vectorizedTask);
   localStorage.setItem("taskAnalytics", JSON.stringify(analytics));
 }
 
@@ -253,4 +256,30 @@ export function integrateTaskHistoryAndAnalytics(userId: string, task: { type: s
   addTaskToHistory(task);
   updateTaskAnalytics(task);
   updateUserProfile(userId, getUserProfiles()[userId].preferences, getUserProfiles()[userId].frequentlyAskedQuestions);
+}
+
+// Helper functions to manage user profiles and contextual memory
+export function manageUserProfiles(userId: string, preferences: any, frequentlyAskedQuestions: any[]) {
+  const userProfiles = getUserProfiles();
+  userProfiles[userId] = { preferences, frequentlyAskedQuestions };
+  localStorage.setItem("userProfiles", JSON.stringify(userProfiles));
+}
+
+// Helper functions to update the AI model with the latest conversation context
+export function updateAIModelWithContext(conversationContext: any) {
+  // Logic to update the AI model with the latest conversation context
+}
+
+// Helper functions to store the entire conversation history
+export function storeFullConversationHistory(conversationHistory: any) {
+  // Logic to store the entire conversation history
+}
+
+// Add logic to update user profiles with new information as the conversation progresses
+export function updateUserProfileWithNewInfo(userId: string, newInfo: any) {
+  const userProfiles = getUserProfiles();
+  if (userProfiles[userId]) {
+    userProfiles[userId].context = newInfo;
+    localStorage.setItem("userProfiles", JSON.stringify(userProfiles));
+  }
 }

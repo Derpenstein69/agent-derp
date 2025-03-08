@@ -17,6 +17,7 @@ import { createWorkersAI } from "workers-ai-provider";
 import { processToolCalls } from "./utils";
 import { tools, executions } from "./tools";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { Vectorize } from "vectorize"; // Import Vectorize
 
 // Environment variables type definition
 export type Env = {
@@ -134,16 +135,30 @@ export class Chat extends AIChatAgent<Env> {
   async analyzeTaskPerformance(taskId: string) {
     // Logic to analyze task performance and provide insights
     // This could involve tracking task completion times, user interactions, and other metrics
+    const task = this.taskHistory.find(t => t.id === taskId);
+    if (task) {
+      const insights = {
+        completionTime: new Date().toISOString(),
+        userInteractions: this.conversationHistory.length,
+        taskDetails: task,
+      };
+      return insights;
+    }
+    return `No task found with ID: ${taskId}`;
   }
 
   // Implement a memory mechanism to retain important details from conversations
   retainConversationDetails(details: any) {
-    this.conversationHistory.push(details);
+    // Integrate with Vectorize for enhanced memory retention
+    const vectorizedDetails = Vectorize(details);
+    this.conversationHistory.push(vectorizedDetails);
   }
 
   // Continuously update the context with new information as the conversation progresses
   updateContext(newInfo: any) {
-    this.conversationHistory.push(newInfo);
+    // Integrate with Vectorize for contextual updates
+    const vectorizedInfo = Vectorize(newInfo);
+    this.conversationHistory.push(vectorizedInfo);
   }
 
   // Store a history of scheduled tasks
@@ -156,28 +171,36 @@ export class Chat extends AIChatAgent<Env> {
     if (!this.userProfiles[userId]) {
       this.userProfiles[userId] = { preferences: {}, frequentlyAskedQuestions: [] };
     }
-    this.userProfiles[userId].preferences = preferences;
+    const vectorizedPreferences = Vectorize(preferences); // Leverage Vectorize for user preferences
+    this.userProfiles[userId].preferences = vectorizedPreferences;
   }
 
   storeFrequentlyAskedQuestions(userId: string, faq: any) {
     if (!this.userProfiles[userId]) {
       this.userProfiles[userId] = { preferences: {}, frequentlyAskedQuestions: [] };
     }
-    this.userProfiles[userId].frequentlyAskedQuestions.push(faq);
+    const vectorizedFAQ = Vectorize(faq); // Use Vectorize for frequently asked questions
+    this.userProfiles[userId].frequentlyAskedQuestions.push(vectorizedFAQ);
   }
 
   // Create user profiles based on contextual memory
   createUserProfile(userId: string, context: any) {
     this.userProfiles[userId] = context;
+    // Update the AI model context with user-specific context
+    this.updateAIModelContext();
   }
 
   // Add a method to update the AI model with the latest conversation context
   updateAIModelContext() {
+    // Integrate Vectorize for updating AI model context
+    const vectorizedContext = Vectorize(this.conversationHistory);
     // Logic to update the AI model with the latest conversation context
   }
 
   // Add a method to store the entire conversation history
   storeConversationHistory() {
+    // Use Vectorize for storing conversation history
+    const vectorizedHistory = Vectorize(this.conversationHistory);
     // Logic to store the entire conversation history
   }
 
@@ -197,6 +220,8 @@ export class Chat extends AIChatAgent<Env> {
       this.userProfiles[userId].preferences = newPreferences;
       this.userProfiles[userId].frequentlyAskedQuestions = newFrequentlyAskedQuestions;
     }
+    // Update the AI model context with user-specific context
+    this.updateAIModelContext();
   }
 
   // Integrate task history and analytics functions into user profiling
@@ -209,6 +234,8 @@ export class Chat extends AIChatAgent<Env> {
   updateUserProfileWithNewInfo(userId: string, newInfo: any) {
     if (this.userProfiles[userId]) {
       this.userProfiles[userId].context = newInfo;
+      // Analyze and update the AI model context based on user behavior and preferences
+      this.updateAIModelContext();
     }
   }
 

@@ -48,6 +48,7 @@ export default function Chat() {
   } = useAgentChat({
     agent,
     maxSteps: 5,
+    streaming: true, // Enable streaming responses
   });
 
   // Scroll to bottom when messages change
